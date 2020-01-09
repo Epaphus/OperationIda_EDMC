@@ -78,10 +78,6 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
         in_repair_station = system == this.system_filter and station == this.station_filter
 
-        print "Ida: MarketSell in_repair_station={}, system={}, station={}, count={}, material={}, server_time={}".format(
-            in_repair_station, system, station, count, material, server_time
-        )
-
         if in_repair_station:
             this.sold_time = server_time
             this.sold[material] = this.sold.get(material, 0) + count
