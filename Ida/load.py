@@ -1,15 +1,18 @@
 
 import sys
-import Tkinter as tk
 import myNotebook as nb
 from config import config
+
+# Python 3
+import tkinter as tk
+from tkinter import ttk
 
 this = sys.modules[__name__]
 main = sys.modules["__main__"]
 
-def plugin_start(plugin_dir):
-    this.system_filter = config.get("Ida_system_filter")
-    this.station_filter = config.get("Isa_station_filter")
+def plugin_start3(plugin_dir):
+    this.system_filter = config.get_str("Ida_system_filter")
+    this.station_filter = config.get_str("Isa_station_filter")
     this.sold = {}
     this.sold_time = None
     this.current_system = ""
@@ -23,8 +26,8 @@ def plugin_prefs(parent, cmd, is_beta):
     PADX=10
     PADY=2
 
-    this.system_filter_setting = tk.StringVar(value=config.get("Ida_system_filter"))
-    this.station_filter_setting = tk.StringVar(value=config.get("Ida_station_filter"))
+    this.system_filter_setting = tk.StringVar(value=config.get_str("Ida_system_filter"))
+    this.station_filter_setting = tk.StringVar(value=config.get_str("Ida_station_filter"))
 
     frame = nb.Frame(parent)
     nb.Label(frame, text="Station under repair").grid(row=0, column=0, padx=PADX, pady=PADY)
@@ -56,7 +59,7 @@ def update_status():
     if sold_time is None:
         this.status["text"] = ""
     else:
-        s = ", ".join("{} {}".format(count, material) for material, count in this.sold.items())
+        s = ", ".join("{} {}".format(count, material) for material, count in list(this.sold.items()))
         s += " @ {}".format(this.sold_time)
         this.status["text"] = s
 
@@ -71,10 +74,10 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     this.current_system = system
     this.current_station = station
 
-    if entry[u"event"] == u"MarketSell":
-        count = entry[u"Count"]
-        material = entry[u"Type"]
-        server_time = entry[u"timestamp"].split("T")[1][:5]
+    if entry["event"] == "MarketSell":
+        count = entry["Count"]
+        material = entry["Type"]
+        server_time = entry["timestamp"].split("T")[1][:5]
 
         in_repair_station = system == this.system_filter and station == this.station_filter
 
