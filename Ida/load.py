@@ -7,16 +7,27 @@ from config import config
 import tkinter as tk
 from tkinter import ttk
 
+import csv
+import os.path
+from os import path
+
 this = sys.modules[__name__]
 main = sys.modules["__main__"]
 
+# Originally from https://github.com/takev/OperationIda_EDMC
+# Updated by CMDR Epaphus
+# v 0.1
+
 def plugin_start3(plugin_dir):
     this.system_filter = config.get_str("Ida_system_filter")
-    this.station_filter = config.get_str("Isa_station_filter")
+    this.station_filter = config.get_str("Ida_station_filter")
     this.sold = {}
+    this.idasold = ""
     this.sold_time = None
     this.current_system = ""
     this.current_station = ""
+
+    this.Dir = plugin_dir
     return "Ida"
 
 def plugin_stop():
@@ -59,15 +70,22 @@ def update_status():
     if sold_time is None:
         this.status["text"] = ""
     else:
-        s = ", ".join("{} {}".format(count, material) for material, count in list(this.sold.items()))
-        s += " @ {}".format(this.sold_time)
+        # s = ", ".join("{} {} \n".format(count, material) for material, count in list(this.sold.items()))
+        # s += " @ {}".format(this.sold_time)
+        s = ", ".join("{} {} \n".format(count, material) for material, count in list(this.sold.items()))
         this.status["text"] = s
+
+        #this.status["text"] = this.idasold
+        
+        
 
 def status_clicked(e):
     main.root.clipboard_clear()
-    main.root.clipboard_append(this.status["text"])
+    #main.root.clipboard_append(this.status["text"])
+    main.root.clipboard_append(this.idasold)
     this.sold_time = None
     this.sold = {}
+    this.idasold = ""
     update_status()
 
 def journal_entry(cmdr, is_beta, system, station, entry, state):
@@ -78,13 +96,16 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         count = entry["Count"]
         material = entry["Type"]
         server_time = entry["timestamp"].split("T")[1][:5]
+        server_timestamp = entry["timestamp"]
 
         in_repair_station = system == this.system_filter and station == this.station_filter
 
         if in_repair_station:
             this.sold_time = server_time
             this.sold[material] = this.sold.get(material, 0) + count
+
+            this.idasold = this.idasold + "{} {} {} \n".format(count, material, server_time)
+
             update_status()
 
-
-
+        
