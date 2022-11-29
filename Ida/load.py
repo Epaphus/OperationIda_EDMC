@@ -22,7 +22,7 @@ main = sys.modules["__main__"]
 
 # Originally from https://github.com/takev/OperationIda_EDMC
 # Updated by CMDR Epaphus (https://github.com/Epaphus/OperationIda_EDMC)
-this.plugin_version = "1.3"
+this.plugin_version = "1.3.1"
 
 def plugin_start3(plugin_dir):
     this.system_filter = config.get_str("Ida_system_filter")
@@ -113,7 +113,6 @@ def prefs_changed(cmdr, is_beta):
 def use_current_station():
     this.system_filter_setting.set(current_system)
     this.station_filter_setting.set(current_station)
-    #this.station_widget ["text"] = current_station
     prefs_changed(None, False)
 
 def update_status():
@@ -145,7 +144,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         in_repair_station = system == this.system_filter and station == this.station_filter
 
         if this.log_all == "1":
-            update_file('any-station-log.csv',server_timestamp,station,material,count)
+            update_file('any-station-log.csv',server_timestamp,system,station,material,count)
 
         if in_repair_station:
             this.sold_time = server_time
@@ -155,13 +154,13 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
 
             update_status()
             if this.log_current == "1":
-                update_file('repair-station-log.csv',server_timestamp,station,material,count)
+                update_file('repair-station-log.csv',server_timestamp,system,station,material,count)
 
-def update_file(filename, time, station, material, count):
+def update_file(filename, time, system, station, material, count):
     file = os.path.join(this.Dir, filename)
     with open(file, 'a', newline='') as csvfile:
-        fieldnames = ['Time','Station','Material','Count']
+        fieldnames = ['Time','System','Station','Material','Count']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writerow({'Time':time, 'Station': station , 'Material': material , 'Count': count })
+        writer.writerow({'Time':time, 'System': system, 'Station': station , 'Material': material , 'Count': count })
         csvfile.close
         
